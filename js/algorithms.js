@@ -12,12 +12,30 @@
   App.algo.rrStep=function(){ if(!S.running && S.readyQueue.length>0){ startIfIdleFrom(S.readyQueue);} if(S.running){ S.gantt.push({processId:S.running.id}); S.running.remainingTime--; S.currentSlice++; if(S.running.remainingTime===0){ completeIfFinished(); } else if(S.currentSlice===S.timeQuantum){ S.running.state='ready'; S.readyQueue.push(S.running); S.running=null; S.currentSlice=0; } } else { S.gantt.push({processId:null}); } };
 
   App.algo.producerConsumerStep=function(){
+    // Wake up sleeping actors if conditions allow
+    if(S.producer.state==='sleeping' && S.empty>0){ S.producer.state='idle'; S.producer.progress=0; }
+    if(S.consumer.state==='sleeping' && S.full>0){ S.consumer.state='idle'; S.consumer.progress=0; }
+
+    // Opportunistically start an idle actor
     if(Math.random()>0.5){ if(S.producer.state==='idle'){ S.producer.state=(S.empty>0)?'producing':'sleeping'; S.producer.progress=0; }}
     else { if(S.consumer.state==='idle'){ S.consumer.state=(S.full>0)?'consuming':'sleeping'; S.consumer.progress=0; }}
-    if(S.producer.state==='producing'){ S.producer.progress+=5; if(S.producer.progress>=100 && S.mutex===1){ S.mutex=0; S.empty--; S.buffer.push({id:Date.now()}); S.full++; S.mutex=1; S.producer.state='idle'; }}
-    if(S.consumer.state==='consuming'){ S.consumer.progress+=5; if(S.consumer.progress>=100 && S.mutex===1){ S.mutex=0; S.full--; S.buffer.shift(); S.empty++; S.mutex=1; S.consumer.state='idle'; }}
+
+    // Produce
+    if(S.producer.state==='producing'){
+      S.producer.progress+=5;
+      if(S.producer.progress>=100 && S.mutex===1 && S.empty>0){
+        S.mutex=0; S.empty--; S.buffer.push({id:Date.now()}); S.full++; S.mutex=1; S.producer.state='idle'; S.producer.progress=0;
+      }
+    }
+    // Consume
+    if(S.consumer.state==='consuming'){
+      S.consumer.progress+=5;
+      if(S.consumer.progress>=100 && S.mutex===1 && S.full>0){
+        S.mutex=0; S.full--; S.buffer.shift(); S.empty++; S.mutex=1; S.consumer.state='idle'; S.consumer.progress=0;
+      }
+    }
   };
 
   App.algo.computeNeed=function(){ const B=S.bankers; B.need=Array(B.nProc).fill(0).map((_,i)=>Array(B.nRes).fill(0).map((_,j)=>B.max[i][j]-B.allocation[i][j])); };
-  App.algo.checkSafeState=function(){ const B=S.bankers; App.algo.computeNeed(); let work=B.available.slice(); let finish=Array(B.nProc).fill(false); const seq=[]; let count=0; while(count<B.nProc){ let found=false; for(let i=0;i<B.nProc;i++){ if(!finish[i]){ let can=true; for(let j=0;j<B.nRes;j++){ if(B.need[i][j]>work[j]){ can=false; break; } } if(can){ for(let j=0;j<B.nRes;j++){ work[j]+=B.allocation[i][j]; } finish[i]=true; seq.push(i); found=true; count++; } } } if(!found){ B.result={safe:false,sequence:null}; return B.result; } } B.result={safe:true,sequence:seq}; return B.result; };
+  App.algo.checkSafeState=function(){ const B=S.bankers; App.algo.computeNeed(); let work=B.available.slice(); let finish=Array(B.nProc).fill(false); const seq=[]; let count=0; while(count<B.nProc){ let found=false; for(let i=0;i<B.nProc;i++){ if(!finish[i]){ let can=true; for(let j=0;j<B.nRes;j++){ if(B.need[i][j]>work[j]){ can=false; break; } } if(can){ for(let j=0;j<B.nRes;j++){ work[j]+=B.allocation[i][j]; } finish[i]=true; seq.push(i); found=true; count++; } } } if(!found){ B.result={safe:false,sequence:null}; B.anim={playing:false, idx:0}; return B.result; } } B.result={safe:true,sequence:seq}; B.anim={playing:false, idx:0}; return B.result; };
 })();

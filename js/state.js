@@ -15,7 +15,7 @@
     // Producer-Consumer
     buffer: [], bufferSize: 5, producer: { state: 'idle', progress: 0 }, consumer: { state: 'idle', progress: 0 }, empty: 5, full: 0, mutex: 1,
     // Banker's
-    bankers: { nProc: 5, nRes: 3, allocation: null, max: null, available: null, need: null, result: null },
+    bankers: { nProc: 5, nRes: 3, allocation: null, max: null, available: null, need: null, result: null, anim: { playing:false, idx:0, speedMs: 400 } },
     // Timeline
     timeline: [], live: true, timelineIndex: 0,
     // Animation
