@@ -1,0 +1,21 @@
+(function(){
+  const App = window.App = window.App || {}; const S = App.state; const CFG=App.config;
+  App.draw = App.draw || {};
+  const procColor = id => CFG.colors[(id-1)%CFG.colors.length];
+
+  App.draw.clear=()=>S.ctx.clearRect(0,0,S.width,S.height);
+  App.draw.drawAll=function(){ App.draw.clear(); if(S.concept==='cpu-scheduling') App.draw.cpuScheduling(); else if(S.concept==='producer-consumer') App.draw.producerConsumer(); else if(S.concept==='bankers-algorithm') App.draw.bankers(); };
+
+  App.draw.cpuScheduling=function(){ drawGantt(); drawStates(); drawTime(); };
+  function drawGantt(){ const ctx=S.ctx, h=50,w=30,y=80,x0=20; ctx.font='16px sans-serif'; ctx.fillStyle='#e6e9ef'; ctx.textAlign='left'; ctx.fillText('Gantt Chart', x0, y-30); S.gantt.forEach((e,i)=>{ const x=x0+i*w; if(e.processId){ ctx.fillStyle=procColor(e.processId); ctx.fillRect(x,y,w,h); ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.fillText('P'+e.processId, x+w/2, y+h/2+5);} else { ctx.strokeStyle='#999'; ctx.strokeRect(x,y,w,h); ctx.fillStyle='#b0b6c3'; ctx.textAlign='center'; ctx.fillText('Idle', x+w/2, y+h/2+5);} ctx.fillStyle='#e6e9ef'; ctx.textAlign='center'; ctx.fillText(i+1, x+w/2, y+h+20); }); }
+  function drawStates(){ const ctx=S.ctx, y=180,bw=100,bh=120,sp=150; ctx.strokeStyle='#f39c12'; ctx.strokeRect(sp,y,bw,bh); ctx.fillStyle='#e6e9ef'; ctx.textAlign='center'; ctx.fillText('Ready', sp+bw/2, y-10); S.readyQueue.forEach((p,i)=>{ ctx.fillStyle=procColor(p.id); ctx.fillRect(sp+10, y+10+i*25, bw-20, 20); ctx.fillStyle='#fff'; ctx.fillText('P'+p.id, sp+bw/2, y+25+i*25); }); ctx.strokeStyle='#2980b9'; ctx.strokeRect(sp*2,y,bw,bh); ctx.fillStyle='#e6e9ef'; ctx.fillText('CPU', sp*2+bw/2, y-10); if(S.running){ ctx.fillStyle=procColor(S.running.id); ctx.fillRect(sp*2+10,y+10,bw-20,20); ctx.fillStyle='#fff'; ctx.fillText('P'+S.running.id, sp*2+bw/2, y+25);} ctx.strokeStyle='#27ae60'; ctx.strokeRect(sp*3,y,bw,bh); ctx.fillStyle='#e6e9ef'; ctx.fillText('Completed', sp*3+bw/2, y-10); S.completed.forEach((p,i)=>{ ctx.fillStyle=procColor(p.id); ctx.fillRect(sp*3+10, y+10+i*25, bw-20, 20); ctx.fillStyle='#fff'; ctx.fillText('P'+p.id, sp*3+bw/2, y+25+i*25); }); }
+  function drawTime(){ const ctx=S.ctx; ctx.font='20px sans-serif'; ctx.fillStyle='#e6e9ef'; ctx.textAlign='left'; ctx.fillText('Time: '+S.currentTime, 20, 28); }
+
+  App.draw.producerConsumer=function(){ const cx=S.width/2; drawActor(S.producer, cx-200, 150, 'Producer', '#3498db'); drawActor(S.consumer, cx+200, 150, 'Consumer', '#e74c3c'); drawBuffer(cx,300,S.bufferSize); };
+  function drawActor(a,x,y,label,color){ const ctx=S.ctx; ctx.fillStyle=color; ctx.font='18px sans-serif'; ctx.textAlign='center'; ctx.fillText(label,x,y-20); ctx.fillRect(x-50,y,100,100); ctx.fillStyle='#fff'; ctx.font='16px sans-serif'; ctx.fillText(a.state,x,y+55); if(a.state==='producing'||a.state==='consuming'){ ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.fillRect(x-50, y+100-a.progress, 100, a.progress); } }
+  function drawBuffer(x,y,size){ const ctx=S.ctx, sw=40, sh=50, tw=size*(sw+10), sx=x-tw/2; ctx.font='18px sans-serif'; ctx.fillStyle='#e6e9ef'; ctx.fillText('Buffer', x, y-20); for(let i=0;i<size;i++){ ctx.strokeStyle='#999'; ctx.strokeRect(sx+i*(sw+10), y, sw, sh);} ctx.fillStyle='#2ecc71'; for(let i=0;i<S.buffer.length;i++){ ctx.fillRect(sx+i*(sw+10)+5, y+5, sw-10, sh-10);} }
+
+  App.draw.bankers=function(){ const ctx=S.ctx; ctx.font='14px sans-serif'; ctx.fillStyle='#e6e9ef'; ctx.textAlign='left'; const B=S.bankers; if(!B.allocation||!B.max||!B.need||!B.available) return; let y=40; ctx.fillText('Allocation',20,y); drawMatrix(B.allocation,120,y); y+=(B.nProc+1)*20+20; ctx.fillText('Max',20,y); drawMatrix(B.max,120,y); y+=(B.nProc+1)*20+20; ctx.fillText('Need',20,y); drawMatrix(B.need,120,y); y+=(B.nProc+1)*20+20; ctx.fillText('Available',20,y); drawVector(B.available,120,y); y+=40; if(B.result){ if(B.result.safe){ ctx.fillStyle='#27ae60'; ctx.fillText('Safe State! Sequence: < '+B.result.sequence.join(', ')+' >', 20, y);} else { ctx.fillStyle='#e74c3c'; ctx.fillText('Unsafe State! No safe sequence found.', 20, y);} } };
+  function drawMatrix(m,x,y){ const ctx=S.ctx; m.forEach((row,i)=>ctx.fillText(row.join('   '), x, y+i*20)); }
+  function drawVector(v,x,y){ const ctx=S.ctx; ctx.fillText(v.join('   '), x, y); }
+})();

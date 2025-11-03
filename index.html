@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OS Concepts Visualization</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>OS Concepts Visualization</h1>
+  <div id="app-container">
+    <div id="controls">
+      <h2>Controls</h2>
+      <div id="concept-selection">
+        <label for="concept">Choose Concept:</label>
+        <select id="concept">
+          <option value="cpu-scheduling">CPU Scheduling</option>
+          <option value="producer-consumer">Producer-Consumer</option>
+          <option value="bankers-algorithm">Banker's Algorithm</option>
+        </select>
+      </div>
+
+      <br />
+
+      <div id="cpu-scheduling-ui">
+        <h3>CPU Scheduling</h3>
+        <div>
+          <label for="algorithm">Algorithm</label>
+          <select id="algorithm">
+            <option value="fcfs">First-Come, First-Served (FCFS)</option>
+            <option value="sjf">Shortest Job First (SJF)</option>
+            <option value="rr">Round Robin (RR)</option>
+            <option value="priority">Priority</option>
+          </select>
+        </div>
+        <br />
+        <div style="display: flex; gap: 10px;">
+          <div style="flex: 1;">
+            <label for="arrival-time">Arrival Time</label>
+            <input type="number" id="arrival-time" min="0" placeholder="e.g. 0" />
+          </div>
+          <div style="flex: 1;">
+            <label for="burst-time">Burst Time</label>
+            <input type="number" id="burst-time" min="1" placeholder="e.g. 5" />
+          </div>
+          <div style="flex: 1;">
+            <label for="priority-input">Priority</label>
+            <input type="number" id="priority-input" min="0" placeholder="Lower = higher priority" style="display:none;" />
+          </div>
+        </div>
+        <br />
+        <div id="time-quantum-input" style="display:none;">
+          <label for="time-quantum">Time Quantum</label>
+          <input type="number" id="time-quantum" min="1" value="2" />
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+          <button id="add-process">Add Process</button>
+          <button id="start-animation">Start</button>
+          <button id="pause-animation">Pause</button>
+          <button id="reset-animation">Reset</button>
+        </div>
+
+        <br />
+
+        <div id="stats-panel" aria-live="polite">
+          <h3>Live Stats</h3>
+          <div class="stats-grid">
+            <div><span>Avg Waiting:</span> <strong id="stat-avg-wait">0</strong></div>
+            <div><span>Avg Turnaround:</span> <strong id="stat-avg-ta">0</strong></div>
+            <div><span>Completed:</span> <strong id="stat-completed">0</strong></div>
+            <div><span>Time:</span> <strong id="stat-time">0</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="producer-consumer-ui" style="display: none;">
+        <h3>Producer-Consumer</h3>
+        <div>
+          <label for="buffer-size">Buffer Size</label>
+          <input type="number" id="buffer-size" min="1" value="5" />
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+          <button id="pc-start">Start</button>
+          <button id="pc-pause">Pause</button>
+          <button id="pc-reset">Reset</button>
+        </div>
+      </div>
+
+      <div id="bankers-algorithm-ui" style="display: none;">
+        <h3>Banker's Algorithm</h3>
+        <div>
+          <label for="num-processes">Processes:</label>
+          <input type="number" id="num-processes" value="5" />
+          <label for="num-resources">Resources:</label>
+          <input type="number" id="num-resources" value="3" />
+          <button id="generate-matrices">Generate</button>
+        </div>
+        <div id="bankers-matrices">
+          <h4>Allocation</h4>
+          <div id="allocation-matrix"></div>
+          <h4>Max</h4>
+          <div id="max-matrix"></div>
+          <h4>Available</h4>
+          <div id="available-vector"></div>
+        </div>
+        <button id="check-safe-state">Check Safe State</button>
+        <div id="bankers-result"></div>
+      </div>
+    </div>
+
+    <div id="visualization">
+      <canvas id="canvas"></canvas>
+      <div id="timeline-controls">
+        <input type="range" id="timeline-slider" min="0" max="0" value="0" />
+        <div class="timeline-meta">
+          <span id="timeline-label">t=0</span>
+          <label class="follow-live"><input type="checkbox" id="follow-live" checked /> Follow live</label>
+        </div>
+      </div>
+    </div>
+
+    <div id="process-list-container">
+      <h3>Process List</h3>
+      <ul id="queue"></ul>
+    </div>
+  </div>
+
+  <script src="js/state.js"></script>
+  <script src="js/algorithms.js"></script>
+  <script src="js/draw.js"></script>
+  <script src="js/animation.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
